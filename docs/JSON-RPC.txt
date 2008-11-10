@@ -1,0 +1,30 @@
+=================
+JSON-RPC Protocol
+=================
+
+To add items to the index, send JSON data like this to the server::
+
+  {
+    'add': {
+      'items': [
+        { 'id': '5fa49624-5cf0-4a57-9b49-a2614cd866c3',
+          'bounds': [-10.0, -10.0, 10.0, 10.0]
+          }
+      ]
+    }
+  }
+
+A query request::
+
+  { 'intersection': { 'bounds': [-10.0, -10.0, 10.0, 10.0] } }
+
+would return something like::
+
+  {
+    'items': [
+      { 'id': '5fa49624-5cf0-4a57-9b49-a2614cd866c3',
+        'bounds': [-10.0, -10.0, 10.0, 10.0]
+        },
+      ...
+    ]
+  }

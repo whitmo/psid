@@ -1,0 +1,13 @@
+README.txt
+setup.cfg
+setup.py
+psid/__init__.py
+psid/sampleapp.py
+psid/wsgiapp.py
+psid.egg-info/PKG-INFO
+psid.egg-info/SOURCES.txt
+psid.egg-info/dependency_links.txt
+psid.egg-info/entry_points.txt
+psid.egg-info/not-zip-safe
+psid.egg-info/requires.txt
+psid.egg-info/top_level.txt

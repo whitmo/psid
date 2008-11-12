@@ -23,8 +23,11 @@ setup(name='psid',
           'simplejson',
           'WebOb',
           'WebTest',
-          'decorator'
+          'decorator',
+          'PEAK-Rules',
+          'selector'
       ],
+      test_suite = 'nose.collector',
       entry_points="""
       # -*- Entry points: -*-
       [paste.app_factory]

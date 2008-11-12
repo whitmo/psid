@@ -1,6 +1,6 @@
 from paste.deploy.config import ConfigMiddleware
 #from webob import exc, Request, Response
-from webob import Request
+from webob import Request, exc
 from psid import view
 from selector import ByMethod
 #from selector import pliant, opliant, ByMethod
@@ -73,42 +73,32 @@ class SpatialIndexService(object):
             return res
         return res(environ, start_response)
 
-##     @classmethod
-##     def register_dispatcher(cls, factory):
-##         cls._dispatcher[factory._for]=factory
-
-        
-## class dispatch_for(object):
-##     def __init__(self, for_):
-##         self.for_ = for_
-
-##     def __call__(self, func):
-##         func._for = self.for_
-##         return classmethod(func)
-
 
 class RootHandler(ByMethod):
-    def GET(self, environ, start_response, *a, **kw):
+    def GET(self, request, start_response):
         pass
 
-    def POST(self, environ, start_response, *a, **kw):
+    def POST(self, request, start_response):
+        pass
+
+    def HEAD(self, request, start_response):
         pass
 
 
 class ItemHandler(ByMethod):
-    def GET(self, environ, start_response, *a, **kw):
+    def GET(self, request, start_response):
         pass
 
-    def POST(self, environ, start_response, *a, **kw):
+    def POST(self, request, start_response):
         pass
 
-    def DELETE(self, environ, start_response, *a, **kw):
+    def HEAD(self, request, start_response):
         pass
 
-    def PUT(self, environ, start_response, *a, **kw):
+    def DELETE(self, request, start_response):
         pass
 
-    def HEAD(self, environ, start_response, *a, **kw):
+    def PUT(self, request, start_response):
         pass
 
     

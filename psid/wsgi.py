@@ -26,39 +26,45 @@ class PSIDSelector(Selector):
 
     add = bymethod_extraction(Selector.add)
 
-# shameless Yaro rip off using WebOb
+
+# shameless Yaro rip off wrapper  using WebOb
 class WebObYaro(object):
     
     def __init__(self, app, extra_props=None):
         """Take the thing to wrap."""
         self.app = app
         self.extra_props = extra_props
+        if self.extra_props:
+            import pdb;pdb.set_trace()
 
     def __call__(self, environ, start_response):
         """Create Request, call thing, unwrap results and respond."""
-        req = Request(environ, start_response, self.extra_props)
-        body = self.app(req)
-        req.save_to_environ()
-        if body is None:
-            body = req.res.body
-        if not req.start_response_called:
-            req.start_response(req.res.status, req.res._headers, req.exc_info)
-            req.start_response_called = True
-        if isinstance(body, str):
-            return [body]
-        elif isiterable(body):
-            return body
-        else:
-            return util.FileWrapper(body)
+        req = Request(environ)
+        res = self.app(req, start_response)
+        return res(environ, start_response)
+    
+##         req.save_to_environ()
+##         import pdb;pdb.set_trace()
+##         if body is None:
+##             body = req.res.body
+##         if not req.start_response_called:
+##             req.start_response(req.res.status, req.res._headers, req.exc_info)
+##             req.start_response_called = True
+##         if isinstance(body, str):
+##             return [body]
+##         elif isiterable(body):
+##             return body
+##         else:
+##             return util.FileWrapper(body)
 
 
 class OWebObYaro(WebObYaro):
     
    def __call__(self, instance, environ, start_response):
         """Create Request, call thing, unwrap results and respond."""
-        req = Request(environ, start_response, self.extra_props)
+        req = Request(environ, start_response)
         body = self.app(instance, req)
-        req.save_to_environ()
+        #req.save_to_environ()
         if body is None:
             body = req.res.body
         if not req.start_response_called:

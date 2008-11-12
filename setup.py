@@ -20,10 +20,14 @@ setup(name='psid',
       install_requires=[
           # -*- Extra requirements: -*-
           'PasteDeploy',
+          'simplejson',
+          'WebOb',
+          'WebTest',
+          'decorator'
       ],
       entry_points="""
       # -*- Entry points: -*-
       [paste.app_factory]
-      main = psid.wsgiapp:make_app
+      main = psid.app:make_app
       """,
       )

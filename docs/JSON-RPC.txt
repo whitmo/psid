@@ -14,9 +14,15 @@ To add items to the index, send JSON data like this to the server::
     }
   }
 
+[or]
+
+POST [{id:..., bounds:[...]}]
+
 A query request::
 
   { 'intersection': { 'bounds': [-10.0, -10.0, 10.0, 10.0] } }
+
+GET [-10.0, -10.0, 10.0, 10.0]
 
 would return something like::
 

@@ -1,5 +1,5 @@
 
       # -*- Entry points: -*-
       [paste.app_factory]
-      main = psid.wsgiapp:make_app
+      main = psid.app:make_app
       

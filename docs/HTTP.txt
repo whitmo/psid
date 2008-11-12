@@ -1,0 +1,52 @@
+====================
+HTTP Protocol (JSON)
+====================
+
+This document outlines an RPC-style protocol for accessing a spatial index
+using HTTP POST and GET. There is only one resource.
+
+To add items to the index, POST to the server JSON data like this::
+
+  POST /create HTTP/1.1
+  Host: example.com
+  Content-type: application/json
+
+  {
+    'items': [
+      { 'id': '5fa49624-5cf0-4a57-9b49-a2614cd866c3',
+        'bbox': [-10.0, -10.0, 10.0, 10.0]
+        }
+    ]
+  }
+
+The "items" property is a list of objects with "id", "bbox", and/or "geometry"
+properties. The id value MUST be globally unique. UUIDs or 'tag' URIs (RFC
+4151) are good examples.
+
+Two simple types of item selection can be performed using HTTP GET.
+Intersection::
+
+  GET /select?o=intersection&b=-10.0,-10.0,10.0,10.0
+  Host: example.com
+
+Would return all items whose bounding boxes intersect with the input bounding
+box in a response like::
+
+  HTTP/1.1 200 OK
+  Content-type: application/json
+
+  {
+    'items': [
+      { 'id': '5fa49624-5cf0-4a57-9b49-a2614cd866c3',
+        'bounds': [-10.0, -10.0, 10.0, 10.0]
+        },
+      ...
+    ]
+  }
+
+A request using the nearest neighbor operation::
+
+  GET /select?o=nearest&b=-10.0,-10.0,10.0,10.0&n=10
+  Host: example.com
+
+Would return the 10 items nearest to the input bounding box.

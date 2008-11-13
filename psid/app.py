@@ -1,11 +1,10 @@
 #from selector import pliant, opliant, ByMethod
 #from webob import exc, Request, Response
 from paste.deploy.config import ConfigMiddleware
-from psid import view
 from psid import wsgi
 from selector import ByMethod
 import static
-from webob import Request, exc
+from webob import Response, Request
 
 
 class RootHandler(ByMethod):
@@ -15,6 +14,11 @@ class RootHandler(ByMethod):
         environ['PATH_INFO'] = '/index.html'
         return get_static(req)(environ, start_response)
 
+    def query(self, req, start_response):
+        res = Response(content_type='text/javascript; charset=utf8')
+        index = res.environ['psid.index']
+        
+
     def GET(self, req, start_response):
         """dispatch for GET conditions"""
         path_seg = self.path_seg = req.path.split("/")
@@ -22,7 +26,7 @@ class RootHandler(ByMethod):
         if not req.queryvars:
             return self.index(req, start_response)
 
-        return # query
+        return self.query(req, start_response)
 
     def POST(self, request, start_response):
         # add a record
@@ -31,8 +35,16 @@ class RootHandler(ByMethod):
     def HEAD(self, request, start_response):
         pass
 
+
 def get_static(req):
     return req.environ['paste.config']['psid.static_app']
+
+def get_static_res(req, start_response):
+    app = get_static(req)
+    ec = req.environ.copy()
+    ec['PATH_INFO'] = "/" + ec['selector.vars']['filename']
+    return app(ec, start_response)
+
 
 class ItemHandler(ByMethod):
     def GET(self, request, start_response):
@@ -58,19 +70,25 @@ def admin(environ, start_response):
     pass
 
 
+class IndexMiddleWare(object):
+    """Middleware for accessing the rtree index"""
+
+    def __init__(self, application, config):
+        self.app = application
+
+    def __call__(self, environ, start_response):
+        req = Request(environ)
+        resp = req.get_response(self.app)
+        return resp(environ, start_response)
+
+
 def make_app(global_conf, **kw):
-    app = wsgi.PSIDSelector(wrap=wsgi.WebObYaro)
-
-##     import tryme
-##     app.add('/{}/{}/foo/{bar}/{}', GET=tryme.viewenv)
-##     app.add('/{}/{}/bar/{bar}/{}', GET=pliant(tryme.viewenv))
-##     app.add('/{}/{}/baz/{bar}/{}', GET=tryme.Viewer())
-
+    app = wsgi.PSIDSelector(wrap=wsgi.WebObWrapper)
     conf = global_conf.copy()
     conf.update(kw)
 
     # load up static resources
-    res_spec = conf['resource'].split(":")
+    res_spec = conf.get('resource', 'psid:resource').split(":")
     magics = [static.StringMagic(**conf)]
     if len(res_spec) == 2:
         pkg, res = res_spec
@@ -82,57 +100,14 @@ def make_app(global_conf, **kw):
     conf['psid.static_app'] = static_app
 
     # setup 'routes'
-    
     app.add("/", RootHandler())
+    app.add("/static/{filename:segment}", GET=get_static_res)
     app.add("/service-doc", GET=service_doc)
     app.add("/admin", GET=admin)
     app.add("/{uid}", ItemHandler())
-    
+
 
     app = ConfigMiddleware(app, conf)
+    app = IndexMiddleWare(app, conf)
     return app
 
-## class SpatialIndexService(object):
-##     content_type = 'text/javascript; charset=utf8'
-
-##     b_dispatch = dict(admin=view.AdminPage,
-##                      service=view.ServiceDocument,
-##                      _item_=view.IndexItem,
-##                      _index_=view.ServiceIndex,
-##                      _query_=view.Query)
-
-##     def __init__(self):
-##         pass
-
-
-##     def POST(self, req, (environ, start_response)):
-##         """POST methods"""        
-
-
-
-##     def PUT(self, req, (environ, start_response)):
-##         """PUT methods"""
-##         if not self.normed_seg:
-##             return exc.HTTPForbidden("HTTP method '%s' is not allow" %req.method)(
-##                 environ, start_response)
-        
-##     def DELETE(self, req, (environ, start_response)):
-##         """DELETE methods"""
-##         if not self.normed_seg:
-##             return exc.HTTPForbidden("HTTP method '%s' is not allow" %req.method)(
-##                 environ, start_response)
-
-
-    
-##     def __call__(self, environ, start_response):
-##         req = Request(environ)
-##         path_seg = self.path_seg = req.path.split("/")
-##         self.normed_seg = [x for x in path_seg if x]
-##         func = getattr(self, req.method, None)
-##         if func is None:
-##             return exc.HTTPForbidden("HTTP method '%s' is not allow" %req.method)(
-##                 environ, start_response)
-##         res = func(req, (environ, start_response))
-##         if isinstance(res, list):
-##             return res
-##         return res(environ, start_response)

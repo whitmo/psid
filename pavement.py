@@ -1,18 +1,21 @@
-from paver.defaults import options, Bunch, task, sh, needs
-from paver.runtime import debug, call_task
-from pkg_resources import working_set
 try:
     from paver.virtual import bootstrap
 except :
     # minilib does not support bootstrap
     pass
+
 from ConfigParser import ConfigParser as CP
-import pkg_resources
 from functools import partial
+from paver.defaults import options, Bunch, task, sh, needs
+from paver.runtime import debug, call_task
+from pkg_resources import working_set
 from setuptools import setup, find_packages
+from zc.buildout.buildout import Options, MissingOption
 import os
-import shutil, time, tempfile
+import pkg_resources
+import shutil
 import sys
+import zc.buildout
 
 __version__ = '0.1'
 
@@ -66,9 +69,6 @@ psid_bunch = Bunch(name='psid',
 
 options(setup=psid_bunch,
         virtualenv=virtualenv)
-
-import logging
-logger = logging.getLogger('zc.buildout.easy_install')
 
 def create_fake_buildout():
     root = sys.prefix
@@ -167,11 +167,7 @@ def install_spatialindex():
         options = dict(url=spi_opt('url'))
         recipe = Recipe(fake_buildout, name, options)
         recipe.install()
-        
-from zc.buildout.buildout import Options, MissingOption
 
-import zc.buildout
-import re
 
 class POpts(Options):
 
@@ -184,9 +180,6 @@ class POpts(Options):
             if '${' in v:
                 self._dosub(k, v)
 
-    _template_split = re.compile('([$]{[^}]*})').split
-    _simple = re.compile('[-a-zA-Z0-9 ._]+$').match
-    _valid = re.compile('\${[-a-zA-Z0-9 ._]+:[-a-zA-Z0-9 ._]+}$').match
     def _sub(self, template, seen):
         value = self._template_split(template)
         subs = []
@@ -211,7 +204,7 @@ class POpts(Options):
                         "The option name in substitution, %s,\n"
                         "has invalid characters."
                         % ref)
-                
+            # only change from original  (no seen)
             v = self.buildout[s[0]].get(s[1], None)
             if v is None:
                 raise MissingOption("Referenced option does not exist:", *s)
@@ -221,7 +214,6 @@ class POpts(Options):
         return ''.join([''.join(v) for v in zip(value[::2], subs)])                
 
 # fix logging to understand buildout
-                
 @task
 @needs('install_spatialindex')
 def install_rtree_egg():

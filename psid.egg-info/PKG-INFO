@@ -1,10 +1,17 @@
 Metadata-Version: 1.0
 Name: psid
 Version: 0.1dev
-Summary: simple spatial index server
-Home-page: UNKNOWN
+Summary: install psid and dependencies
+Home-page: http://psid.opengeo.org
 Author: Sean Gillies and Whit Morriss
-Author-email: whit [at] opengeo.org
-License: BSDish
+Author-email: psid@list.opengeo.org
+License: BSD
 Description: UNKNOWN
 Platform: UNKNOWN
+Classifier: Development Status :: 3 - Alpha
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python
+Classifier: Topic :: Internet :: WWW/HTTP
+Classifier: Topic :: Internet :: WWW/HTTP :: Dynamic Content
+Classifier: Topic :: Internet :: WWW/HTTP :: WSGI
+Classifier: Topic :: Internet :: WWW/HTTP :: WSGI :: Application

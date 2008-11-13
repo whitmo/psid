@@ -1,5 +1,3 @@
-
-      # -*- Entry points: -*-
-      [paste.app_factory]
-      main = psid.app:make_app
-      
+                   [paste.app_factory]
+                   main = psid.app:make_app
+                   

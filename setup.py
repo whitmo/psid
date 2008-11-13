@@ -24,8 +24,8 @@ setup(name='psid',
           'WebOb',
           'WebTest',
           'decorator',
-          'PEAK-Rules',
-          'selector'
+          'selector',
+          'static'
       ],
       test_suite = 'nose.collector',
       entry_points="""

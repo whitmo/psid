@@ -1,10 +1,17 @@
 from decorator import decorator
+from pkg_resources import resource_filename, Requirement
 from selector import Selector, ByMethod
+from static import Shock
 from webob import Request
 from wsgiref import util
 import re
 
 ALL_CAPS = re.compile(r'^[A-Z]+$')
+
+
+def shock_wrap(package_name, dirname, **kw):
+    resource = Requirement.parse(package_name)
+    return Shock(resource_filename(resource, dirname), **kw)
 
 
 @decorator
@@ -41,6 +48,13 @@ class WebObYaro(object):
         """Create Request, call thing, unwrap results and respond."""
         req = Request(environ)
         res = self.app(req, start_response)
+
+        if isinstance(res, basestring):
+            return [res]
+
+        if isiterable(res):
+            return res
+
         return res(environ, start_response)
     
 ##         req.save_to_environ()
@@ -87,3 +101,7 @@ def isiterable(it):
         return False
     else:
         return True
+
+
+
+

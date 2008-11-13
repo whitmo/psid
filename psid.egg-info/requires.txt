@@ -3,5 +3,5 @@ simplejson
 WebOb
 WebTest
 decorator
-PEAK-Rules
 selector
+static

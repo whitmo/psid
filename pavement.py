@@ -1,7 +1,11 @@
 from paver.defaults import options, Bunch, task, sh, needs
 from paver.runtime import debug, call_task
 from pkg_resources import working_set
-from paver.virtual import bootstrap
+try:
+    from paver.virtual import bootstrap
+except :
+    # minilib does not support bootstrap
+    pass
 from ConfigParser import ConfigParser as CP
 import pkg_resources
 from functools import partial

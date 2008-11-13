@@ -1,6 +1,7 @@
 from paver.defaults import options, Bunch, task, sh, needs
 from paver.runtime import debug, call_task
 from pkg_resources import working_set
+from paver.virtual import bootstrap
 from ConfigParser import ConfigParser as CP
 import pkg_resources
 from functools import partial
@@ -25,6 +26,10 @@ install_requires=[
     ]
 
 
+virtualenv = Bunch(
+        script_name="psid_env.py",
+        packages_to_install=install_requires + ['nose','pip'],
+        ) 
 
 
 psid_bunch = Bunch(name='psid',
@@ -55,7 +60,9 @@ psid_bunch = Bunch(name='psid',
                    """
                    )
 
-options(setup=psid_bunch)
+options(setup=psid_bunch,
+        virtualenv=virtualenv)
+
 import logging
 logger = logging.getLogger('zc.buildout.easy_install')
 
@@ -233,7 +240,7 @@ def install():
 
 @task
 @needs('install_rtree_egg')
-def install():
+def develop():
     call_task("setuptools.command.develop")    
 
 @task

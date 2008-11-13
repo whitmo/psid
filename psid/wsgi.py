@@ -35,7 +35,7 @@ class PSIDSelector(Selector):
 
 
 # shameless Yaro rip off wrapper  using WebOb
-class WebObYaro(object):
+class WebObWrapper(object):
     
     def __init__(self, app, extra_props=None):
         """Take the thing to wrap."""
@@ -57,40 +57,6 @@ class WebObYaro(object):
 
         return res(environ, start_response)
     
-##         req.save_to_environ()
-##         import pdb;pdb.set_trace()
-##         if body is None:
-##             body = req.res.body
-##         if not req.start_response_called:
-##             req.start_response(req.res.status, req.res._headers, req.exc_info)
-##             req.start_response_called = True
-##         if isinstance(body, str):
-##             return [body]
-##         elif isiterable(body):
-##             return body
-##         else:
-##             return util.FileWrapper(body)
-
-
-class OWebObYaro(WebObYaro):
-    
-   def __call__(self, instance, environ, start_response):
-        """Create Request, call thing, unwrap results and respond."""
-        req = Request(environ, start_response)
-        body = self.app(instance, req)
-        #req.save_to_environ()
-        if body is None:
-            body = req.res.body
-        if not req.start_response_called:
-            req.start_response(req.res.status, req.res._headers, req.exc_info)
-            req.start_response_called = True
-        if isinstance(body, str):
-            return [body]
-        elif isiterable(body):
-            return body
-        else:
-            return util.FileWrapper(body)    
-
 
 def isiterable(it):
     # from Yaro

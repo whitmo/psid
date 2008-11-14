@@ -8,8 +8,10 @@ from ConfigParser import ConfigParser as CP
 from functools import partial
 from paver.defaults import options, Bunch, task, sh, needs
 from paver.runtime import debug, call_task
-from pkg_resources import working_set
-from setuptools import setup, find_packages
+from pkg_resources import working_set, PathMetadata, Distribution, EggMetadata
+from setuptools import find_packages
+from setuptools.command.easy_install import PthDistributions
+import zipimport
 import os
 import pkg_resources
 import shutil
@@ -232,10 +234,22 @@ def install_rtree_egg():
     POpts = make_POpts()
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
     recipe = rec_ep(fake_buildout, section, opts)
-    recipe.install()
+    flist = recipe.install()
+    update_pth(flist[0])
+    
+def egg_distribution(egg_path):
+    if os.path.isdir(egg_path):
+        metadata = PathMetadata(egg_path,os.path.join(egg_path,'EGG-INFO'))
+    else:
+        metadata = EggMetadata(zipimport.zipimporter(egg_path))
+    return Distribution.from_filename(egg_path,metadata=metadata)
 
-    # this should put it on the path
-    sh(get_easy_install_path() + ' Rtree')
+def update_pth(egg_path):
+    spd = get_site_packages_dir()
+    easy_install_pth = os.path.join(spd, "easy-install.pth")
+    distros = PthDistributions(easy_install_pth)
+    distros.add(egg_distribution(egg_path))
+    distros.save()
 
 
 @task

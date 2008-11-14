@@ -10,12 +10,11 @@ from paver.defaults import options, Bunch, task, sh, needs
 from paver.runtime import debug, call_task
 from pkg_resources import working_set
 from setuptools import setup, find_packages
-from zc.buildout.buildout import Options, MissingOption
 import os
 import pkg_resources
 import shutil
 import sys
-import zc.buildout
+
 
 __version__ = '0.1'
 
@@ -117,6 +116,7 @@ def sjoin(*args):
 
 
 
+
 @task
 @needs('install_pip')
 def install_recipes():
@@ -136,6 +136,55 @@ def install_recipes():
         import zc.recipe.egg
         import hexagonit.recipe.cmmi
 
+
+def make_POpts():
+    from zc.buildout.buildout import Options, MissingOption
+    import zc.buildout
+    
+    class POpts(Options):
+
+        def __init__(self, buildout, section, data):
+            Options.__init__(self, buildout, section, data)
+            self.sub_all()
+
+        def sub_all(self):
+            for k, v in self._raw.items():
+                if '${' in v:
+                    self._dosub(k, v)
+
+        def _sub(self, template, seen):
+            value = self._template_split(template)
+            subs = []
+            for ref in value[1::2]:
+                s = tuple(ref[2:-1].split(':'))
+                if not self._valid(ref):
+                    if len(s) < 2:
+                        raise zc.buildout.UserError("The substitution, %s,\n"
+                                                    "doesn't contain a colon."
+                                                    % ref)
+                    if len(s) > 2:
+                        raise zc.buildout.UserError("The substitution, %s,\n"
+                                                    "has too many colons."
+                                                    % ref)
+                    if not self._simple(s[0]):
+                        raise zc.buildout.UserError(
+                            "The section name in substitution, %s,\n"
+                            "has invalid characters."
+                            % ref)
+                    if not self._simple(s[1]):
+                        raise zc.buildout.UserError(
+                            "The option name in substitution, %s,\n"
+                            "has invalid characters."
+                            % ref)
+                # only change from original  (no seen)
+                v = self.buildout[s[0]].get(s[1], None)
+                if v is None:
+                    raise MissingOption("Referenced option does not exist:", *s)
+                subs.append(v)
+            subs.append('')
+
+            return ''.join([''.join(v) for v in zip(value[::2], subs)])
+    return POpts
 
 _bo_conf = None
 @task
@@ -169,49 +218,7 @@ def install_spatialindex():
         recipe.install()
 
 
-class POpts(Options):
 
-    def __init__(self, buildout, section, data):
-        Options.__init__(self, buildout, section, data)
-        self.sub_all()
-        
-    def sub_all(self):
-        for k, v in self._raw.items():
-            if '${' in v:
-                self._dosub(k, v)
-
-    def _sub(self, template, seen):
-        value = self._template_split(template)
-        subs = []
-        for ref in value[1::2]:
-            s = tuple(ref[2:-1].split(':'))
-            if not self._valid(ref):
-                if len(s) < 2:
-                    raise zc.buildout.UserError("The substitution, %s,\n"
-                                                "doesn't contain a colon."
-                                                % ref)
-                if len(s) > 2:
-                    raise zc.buildout.UserError("The substitution, %s,\n"
-                                                "has too many colons."
-                                                % ref)
-                if not self._simple(s[0]):
-                    raise zc.buildout.UserError(
-                        "The section name in substitution, %s,\n"
-                        "has invalid characters."
-                        % ref)
-                if not self._simple(s[1]):
-                    raise zc.buildout.UserError(
-                        "The option name in substitution, %s,\n"
-                        "has invalid characters."
-                        % ref)
-            # only change from original  (no seen)
-            v = self.buildout[s[0]].get(s[1], None)
-            if v is None:
-                raise MissingOption("Referenced option does not exist:", *s)
-            subs.append(v)
-        subs.append('')
-
-        return ''.join([''.join(v) for v in zip(value[::2], subs)])                
 
 # fix logging to understand buildout
 @task
@@ -222,12 +229,14 @@ def install_rtree_egg():
     ls_path = os.path.join(sys.prefix, 'libspatialindex')
     lsl = fake_buildout.setdefault('libspatialindex', dict(location=ls_path))
     rec_ep = pkg_resources.load_entry_point("zc.recipe.egg", 'zc.buildout', 'custom')
+    POpts = make_POpts()
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
     recipe = rec_ep(fake_buildout, section, opts)
     recipe.install()
 
     # this should put it on the path
     sh(get_easy_install_path() + ' Rtree')
+
 
 @task
 @needs('install_rtree_egg')

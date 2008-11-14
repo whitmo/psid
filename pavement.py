@@ -34,9 +34,18 @@ install_requires=[
     ]
 
 
+setup_deps = [
+    "zc.buildout",
+    "zc.recipe.egg",
+    "hexagonit.recipe.cmmi",
+    'nose',
+    'pip',
+    'virtualenv'
+    ]
+
 virtualenv = Bunch(
         script_name="psid_env.py",
-        packages_to_install=install_requires + ['nose','pip'],
+        packages_to_install=install_requires + setup_deps,
         ) 
 
 

@@ -243,7 +243,10 @@ def install_rtree_egg():
     POpts = make_POpts()
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
     recipe = rec_ep(fake_buildout, section, opts)
-    flist = recipe.install()
+    try:
+        flist = recipe.install()
+    except :
+        import pdb; pdb.post_mortem(sys.exc_info()[2])
     update_pth(flist[0])
     
 def egg_distribution(egg_path):

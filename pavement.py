@@ -40,7 +40,8 @@ setup_deps = [
     "hexagonit.recipe.cmmi",
     'nose',
     'pip',
-    'virtualenv'
+    'virtualenv',
+    'setuptools>0.6c8'
     ]
 
 virtualenv = Bunch(

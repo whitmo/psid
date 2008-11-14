@@ -3,9 +3,9 @@ setup.cfg
 setup.py
 psid/__init__.py
 psid/app.py
-psid/index.py
 psid/scratch.py
 psid/view.py
+psid/wrtree.py
 psid/wsgi.py
 psid.egg-info/PKG-INFO
 psid.egg-info/SOURCES.txt

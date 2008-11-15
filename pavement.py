@@ -3,7 +3,6 @@ try:
 except :
     # minilib does not support bootstrap
     pass
-
 from ConfigParser import ConfigParser as CP
 from functools import partial
 from paver.defaults import options, Bunch, task, sh, needs
@@ -11,12 +10,15 @@ from paver.runtime import debug, call_task
 from pkg_resources import working_set, PathMetadata, Distribution, EggMetadata
 from setuptools import find_packages
 from setuptools.command.easy_install import PthDistributions
-import zipimport
+import distutils.debug
 import os
 import pkg_resources
 import shutil
+import subprocess
 import sys
+import zipimport
 
+distutils.debug.DEBUG = True
 
 __version__ = '0.1'
 
@@ -126,9 +128,6 @@ def install_pip():
 def sjoin(*args):
     return " ".join(args)
 
-
-
-
 @task
 @needs('install_pip')
 def install_recipes():
@@ -210,8 +209,6 @@ def section_get(section):
 def section_dict(section, vars=None):
     return dict(_bo_conf.get(section, vars=vars))
 
-
-
 @task
 @needs(['install_recipes', 'load_config'])
 def install_spatialindex():
@@ -233,36 +230,33 @@ def install_spatialindex():
         recipe.options['location']=install_dir
         recipe.options['prefix']=install_dir
         recipe.options['compile-directory']=comp_dir
-        import pdb;pdb.set_trace()
+        
         recipe.install()
-        import pdb;pdb.set_trace()
-
 
 @task
 def de_env():
     shutil.rmtree(os.path.join(sys.prefix, 'bin'))
-    shutil.rmtree(os.path.join(sys.prefix, 'lib'))    
-
-
+    shutil.rmtree(os.path.join(sys.prefix, 'lib'))
 
 
 # fix logging to understand buildout
 @task
 @needs('install_spatialindex')
 def install_rtree_egg():
-    import pdb;pdb.set_trace()
     section = 'rtree'
     fake_buildout = create_fake_buildout()
     ls_path = os.path.join(sys.prefix, 'lib', 'libspatialindex')
     lsl = fake_buildout.setdefault('libspatialindex', dict(location=ls_path))
-    rec_ep = pkg_resources.load_entry_point("zc.recipe.egg", 'zc.buildout', 'custom')
+    rec_klass = pkg_resources.load_entry_point("zc.recipe.egg", 'zc.buildout', 'custom')
+
     POpts = make_POpts()
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
-    recipe = rec_ep(fake_buildout, section, opts)
+    recipe = rec_klass(fake_buildout, section, opts)
+    import zc.buildout
     try:
         flist = recipe.install()
-    except :
-        import pdb; pdb.post_mortem(sys.exc_info()[2])
+    except zc.buildout.UserError:
+        flist = recipe.install()
     update_pth(flist[0])
     
 def egg_distribution(egg_path):

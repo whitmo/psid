@@ -14,7 +14,6 @@ import distutils.debug
 import os
 import pkg_resources
 import shutil
-import subprocess
 import sys
 import zipimport
 
@@ -243,6 +242,7 @@ def de_env():
 @task
 @needs('install_spatialindex')
 def install_rtree_egg():
+    # rewrite to not use buildout
     section = 'rtree'
     fake_buildout = create_fake_buildout()
     ls_path = os.path.join(sys.prefix, 'lib', 'libspatialindex')
@@ -252,12 +252,16 @@ def install_rtree_egg():
     POpts = make_POpts()
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
     recipe = rec_klass(fake_buildout, section, opts)
-    import zc.buildout
-    try:
-        flist = recipe.install()
-    except zc.buildout.UserError:
-        flist = recipe.install()
-    update_pth(flist[0])
+
+    sh(get_pip_path() + "install --no-install Rtree")
+    rtree_src = os.path.join(sys.prefix, 'build', 'Rtree')
+    setup_cfg = os.path.join(rtree_src, 'setup.cfg')
+
+    import setuptools.command.setopt
+    setuptools.command.setopt.edit_config(setup_cfg, dict(build_ext=recipe.build_ext))
+
+    sh('cd %s; %s setup.py install' %(rtree_src, sys.executable))
+
     
 def egg_distribution(egg_path):
     if os.path.isdir(egg_path):

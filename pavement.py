@@ -198,6 +198,7 @@ def make_POpts():
 
 @task
 def compose_index():
+    """create a simple pypi style index for for this virtualenv"""
     try:
         import compoze
     except ImportError:
@@ -205,6 +206,7 @@ def compose_index():
     dlpath = os.path.join(sys.prefix, 'downloads')
     sh(sjoin('%s/bin/compoze' %sys.prefix, 'fetch --path ', dlpath, ' --fetch-site-packages',
              'index --path', dlpath ))
+
         
 _bo_conf = None
 @task

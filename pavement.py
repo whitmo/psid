@@ -196,6 +196,16 @@ def make_POpts():
             return ''.join([''.join(v) for v in zip(value[::2], subs)])
     return POpts
 
+@task
+def compose_index():
+    try:
+        import compoze
+    except ImportError:
+        sh(sjoin(sys.executable, get_pip_path(), 'install -i http://dist.repoze.org/simple compoze'))
+    dlpath = os.path.join(sys.prefix, 'downloads')
+    sh(sjoin('%s/bin/compoze' %sys.prefix, 'fetch --path ', dlpath, ' --fetch-site-packages',
+             'index --path', dlpath ))
+        
 _bo_conf = None
 @task
 def load_config():

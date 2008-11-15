@@ -210,24 +210,38 @@ def section_get(section):
 def section_dict(section, vars=None):
     return dict(_bo_conf.get(section, vars=vars))
 
+
+
 @task
 @needs(['install_recipes', 'load_config'])
 def install_spatialindex():
     name = 'libspatialindex'
     root = sys.prefix
-    install = os.path.join(root, name)
-    comp_dir = install + "__compile__"
+    install_dir = os.path.join(root, 'lib', name)
+    comp_dir = install_dir + "__compile__"
     if os.path.exists(comp_dir):
         shutil.rmtree(comp_dir)
-    if os.path.exists(install):
-        debug("Remove %s if you need to reinstall %s" %(install, name))
+    if os.path.exists(install_dir):
+        debug("Remove %s if you need to reinstall %s" %(install_dir, name))
     else:
         fake_buildout = create_fake_buildout()
         from hexagonit.recipe.cmmi import Recipe
         spi_opt = section_get('libspatialindex')
         options = dict(url=spi_opt('url'))
+
         recipe = Recipe(fake_buildout, name, options)
+        recipe.options['location']=install_dir
+        recipe.options['prefix']=install_dir
+        recipe.options['compile-directory']=comp_dir
+        import pdb;pdb.set_trace()
         recipe.install()
+        import pdb;pdb.set_trace()
+
+
+@task
+def de_env():
+    shutil.rmtree(os.path.join(sys.prefix, 'bin'))
+    shutil.rmtree(os.path.join(sys.prefix, 'lib'))    
 
 
 
@@ -236,9 +250,10 @@ def install_spatialindex():
 @task
 @needs('install_spatialindex')
 def install_rtree_egg():
+    import pdb;pdb.set_trace()
     section = 'rtree'
     fake_buildout = create_fake_buildout()
-    ls_path = os.path.join(sys.prefix, 'libspatialindex')
+    ls_path = os.path.join(sys.prefix, 'lib', 'libspatialindex')
     lsl = fake_buildout.setdefault('libspatialindex', dict(location=ls_path))
     rec_ep = pkg_resources.load_entry_point("zc.recipe.egg", 'zc.buildout', 'custom')
     POpts = make_POpts()

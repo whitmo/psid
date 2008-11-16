@@ -115,6 +115,7 @@ def add_to_sys_path(package):
 
 @task
 def install_pip():
+    """Installs pip, easy_installs better behaved younger brother"""
     root = sys.prefix
     easy_install_path = get_easy_install_path()
     try:
@@ -130,6 +131,7 @@ def sjoin(*args):
 @task
 @needs('install_pip')
 def install_recipes():
+    """Installs zc.buildout and buildout recipes for use by other tasks"""
     root = sys.prefix
     pip_path = get_pip_path()
 
@@ -139,12 +141,14 @@ def install_recipes():
         import hexagonit.recipe.cmmi
     except ImportError:
         sh(sjoin(sys.executable, pip_path, 'install -r recipes.txt --ignore-installed'))
+        add_to_sys_path('hexagonit')
+        add_to_sys_path('hexagonit.recipe.cmmi')
+        add_to_sys_path('zc')
         add_to_sys_path('zc.buildout')
         add_to_sys_path('zc.recipe.egg')
-        add_to_sys_path('hexagonit.recipe.cmmi')
+        import hexagonit.recipe.cmmi
         import zc.buildout
         import zc.recipe.egg
-        import hexagonit.recipe.cmmi
 
 
 def make_POpts():
@@ -211,6 +215,7 @@ def compose_index():
 _bo_conf = None
 @task
 def load_config():
+    """load up buildout configuration for use by recipes"""
     global _bo_conf
     _bo_conf = ConfigMap.load('buildout.cfg')
 
@@ -223,6 +228,7 @@ def section_dict(section, vars=None):
 @task
 @needs(['install_recipes', 'load_config'])
 def install_spatialindex():
+    """Installs headers and libraries for libspatialindex"""
     name = 'libspatialindex'
     root = sys.prefix
     install_dir = os.path.join(root, 'lib', name)
@@ -246,6 +252,7 @@ def install_spatialindex():
 
 @task
 def de_env():
+    """Delete 'bin' and 'lib'. Not reversible"""
     shutil.rmtree(os.path.join(sys.prefix, 'bin'))
     shutil.rmtree(os.path.join(sys.prefix, 'lib'))
 
@@ -254,6 +261,7 @@ def de_env():
 @task
 @needs('install_spatialindex')
 def install_rtree_egg():
+    """Install Rtree distribution according to arguments in buildout.cfg"""
     # rewrite to not use buildout
     section = 'rtree'
     fake_buildout = create_fake_buildout()
@@ -293,23 +301,25 @@ def update_pth(egg_path):
 @task
 @needs('install_rtree_egg')
 def install():
+    """install psid w/ all dependencies"""
     call_task("setuptools.command.install")
 
 @task
 @needs('install_rtree_egg')
 def develop():
+    """Install all dependencies and develop install psid"""
     call_task("setuptools.command.develop")    
 
 @task
 @needs(['generate_setup', 'minilib', 'setuptools.command.sdist'])
 def sdist():
-    """Overrides sdist to make sure that our setup.py is generated."""
-    pass
+    """create a source distribution"""
+    call_task("setuptools.command.sdist")    
 
 @task
 def bdist_egg():
-    """Overrides sdist to make sure that our setup.py is generated."""
-    call_task("setuptools.command.install")
+    """create an egg distribution"""
+    call_task("setuptools.command.bdist_egg")
 
 
 class ConfigMap(object):

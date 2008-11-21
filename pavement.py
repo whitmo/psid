@@ -77,6 +77,8 @@ psid_bunch = Bunch(name='psid',
                    entry_points = """\
                    [paste.app_factory]
                    main = psid.app:make_app
+                   [paste.app_filter_factory]
+                   main = rtree_middleware:make_rtree_middleware
                    """
                    )
 

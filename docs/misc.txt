@@ -1,0 +1,48 @@
+===========================
+ PSID Miscelaneous Goodies
+===========================
+
+
+Other setup.py Options
+======================
+
+ psid ships with some options extending setup.py that may be useful to
+ developer or for debugging the package build in different
+ environments.  via "paver", psid includes the following build option.
+
+   * python setup.py compose_index
+       Fetches versions of packages found in
+       'lib/python{version}/site-packages' to $VIRTUAL_ENV/download
+       and creates a simple static PyPI style index in $VIRTUAL_ENV/download/simple
+
+   * python setup.py install_pip
+       Installs pip, the kinder gentler easy_install
+
+   * python setup.py install_spatialindex
+       Installs libspatialindex into $VIRTUAL_ENV/lib/libspatialindex
+
+   * python setup.py install_rtree_egg
+       Install Rtree distribution into the current virtualenv, linking
+       against $VIRTUAL_ENV/lib/libspatialindex
+
+
+zc.buildout compatibility
+=========================
+
+ A buildout.cfg is provided and used by the package build. Though it
+ is unsupported for direct use with buildout, it should work with a
+ minimal amount of modification.
+
+
+Other Names Considered
+======================
+
+Psid is a working title.  other possibilities::
+
+ * ichsi - 'I can haz spatial indexing'
+
+ * psi - 'python spatial index'
+
+ * cuspid - 'can u spatially index data?'
+
+ * xing - 'xing is not geoserver' 

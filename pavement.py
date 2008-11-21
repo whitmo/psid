@@ -26,6 +26,7 @@ CHANGES=''
 
 install_requires=[
     'PasteDeploy',
+    'PasteScript',
     'simplejson',
     'WebOb',
     'WebTest',

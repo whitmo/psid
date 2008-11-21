@@ -1,4 +1,5 @@
 PasteDeploy
+PasteScript
 simplejson
 WebOb
 WebTest

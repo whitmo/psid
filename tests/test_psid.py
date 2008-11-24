@@ -6,7 +6,15 @@ import pkg_resources
 
 dist = pkg_resources.Requirement.parse('psid')
 
-app = TestApp(make_app(dict(rtree_basepath='psid:tests', clear_index=False)))
+app = None
+
+def setup():
+    global app
+    app = TestApp(make_app(dict(rtree_basepath='psid:tests', clear_index=False)))
+    try:
+        teardown()
+    except OSError:
+        pass
 
 def teardown():
     data = pkg_resources.resource_filename(dist, 'tests')

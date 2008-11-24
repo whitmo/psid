@@ -1,8 +1,0 @@
-PasteDeploy
-PasteScript
-simplejson
-WebOb
-WebTest
-decorator
-selector
-static

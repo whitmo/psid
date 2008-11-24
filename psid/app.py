@@ -28,11 +28,9 @@ class RootHandler(BaseHandler):
         # improve error output
         try:
             bounds = [float(req.GET.get(param)) for param in self.bounds_params]
-        except IndexError:
+        except IndexError, e:
             raise
-        except ValueError:
-            raise
-        else:
+        except ValueError, e:
             raise
         return bounds
 
@@ -100,9 +98,9 @@ def get_static_res(req, start_response):
 
 class ItemHandler(BaseHandler):
     def GET(self, request, start_response):
-        res = Response(content_type='application/json')
-        index = self.rtree(request)
-        import pdb;pdb.set_trace()
+##         res = Response(content_type='application/json')
+##         index = self.rtree(request)
+        raise NotImplemented
 
     def POST(self, request, start_response):
         raise NotImplementedError

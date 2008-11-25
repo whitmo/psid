@@ -101,7 +101,7 @@ class ItemHandler(BaseHandler):
     def GET(self, request, start_response):
 ##         res = Response(content_type='application/json')
 ##         index = self.rtree(request)
-        raise NotImplemented
+        raise NotImplementedError
 
     def POST(self, request, start_response):
         raise NotImplementedError

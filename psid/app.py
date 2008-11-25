@@ -5,6 +5,7 @@ from psid import wsgi
 from psid.wrtree import make_rtree_middleware
 from selector import ByMethod
 from webob import Response
+import transaction
 import simplejson
 import static
 
@@ -144,15 +145,13 @@ def make_whitstyle_api(conf):
     app.add("/{uid}", ItemHandler())
     return app
 
-
 def make_app(global_conf, **kw):
     conf = global_conf.copy()
     conf.update(kw)
 
     # configure by entrypoint
     app = make_whitstyle_api(conf)
-
     app = ConfigMiddleware(app, conf)
-    app = make_rtree_middleware(app, conf)
     return app
+
 

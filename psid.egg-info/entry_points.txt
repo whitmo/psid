@@ -1,6 +1,0 @@
-
-[paste.app_factory]
-main = psid.app:make_app
-[paste.filter_app_factory]
-rtree = psid.wrtree:make_rtree_middleware
-tm_rtree = psid.wrtree:make_tmrtree_middleware

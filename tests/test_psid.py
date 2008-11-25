@@ -1,5 +1,6 @@
 from webtest import TestApp
 from psid.app import make_app
+from paste.deploy.loadwsgi import loadapp
 import simplejson
 import os
 import pkg_resources
@@ -10,11 +11,17 @@ app = None
 
 def setup():
     global app
-    app = TestApp(make_app(dict(rtree_basepath='psid:tests', clear_index=False)))
+    doc_path = pkg_resources.resource_filename(dist, 'docs')
+    gc = dict(data_path='psid:tests')
+    app2 = loadapp('config:psid-conf.ini',
+                   name='base',
+                   **dict(global_conf=gc, relative_to=doc_path))
+    
+    app = TestApp(app2)
     try:
         teardown()
-    except OSError:
-        pass
+    except OSError, e:
+        print e
 
 def teardown():
     data = pkg_resources.resource_filename(dist, 'tests')
@@ -33,7 +40,8 @@ def test_empty_index_query():
     assert res.json == [], "Not an empty list"
     
 def test_basic():
-    app.get('/', status=200)    
+    app.get('/', status=200)
+    
 
 def test_post():
     item = simplejson.dumps(dict(id=1, bbox=[0,0,10,10]))

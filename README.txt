@@ -43,4 +43,8 @@ Psid comes with a special virtualenv bootstrap that
   . bin/activate
 
 
+Serving
+=======
+ 
+ paster serve docs/psid-conf.ini data_path='psid:data'
 

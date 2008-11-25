@@ -24,6 +24,15 @@ __version__ = '0.1'
 README= ''
 CHANGES=''
 
+entry_points = \
+"""
+[paste.app_factory]
+main = psid.app:make_app
+[paste.filter_app_factory]
+rtree = psid.wrtree:make_rtree_middleware
+tm_rtree = psid.wrtree:make_tmrtree_middleware
+"""
+
 install_requires=[
     'PasteDeploy',
     'PasteScript',
@@ -32,7 +41,10 @@ install_requires=[
     'WebTest',
     'decorator',
     'selector',
-    'static'
+    'static',
+    'repoze.tm2',
+    'ZODB3',
+    'repoze.debug'
     ]
 
 
@@ -71,15 +83,11 @@ psid_bunch = Bunch(name='psid',
                    license="BSD",
                    test_suite='nose.collector',
                    packages=find_packages(),
+                   dependency_links=['http://dist.repoze.org/lemonade/dev/simple'],
                    include_package_data=True,
                    zip_safe=False,
                    install_requires = install_requires,
-                   entry_points = """\
-                   [paste.app_factory]
-                   main = psid.app:make_app
-                   [paste.app_filter_factory]
-                   main = rtree_middleware:make_rtree_middleware
-                   """
+                   entry_points = entry_points
                    )
 
 options(setup=psid_bunch,

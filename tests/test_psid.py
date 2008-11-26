@@ -85,3 +85,13 @@ def test_newpost_queryable():
     res = app.post('/', json_item)
     res = app.get('/?maxx=10&maxy=10&minx=0&miny=0', status=200)
     assert res.json == [1], ValueError(res.json)
+
+def test_service_doc():
+    res = app.get('/service-doc', status=200)
+
+def test_nearest():
+    records = [dict(id=1, bbox=[0,0,9,9]), dict(id=2, bbox=[0,0,9,9])]
+    for record in records:
+        json_item = simplejson.dumps(record)
+        res = app.post('/', json_item)
+    res = app.get('/nearest?maxx=10&maxy=10&minx=0&miny=0&n=1', status=200)

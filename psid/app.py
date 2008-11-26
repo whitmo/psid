@@ -17,30 +17,20 @@ class BaseHandler(ByMethod):
         return req.environ['psid.rtree_raw']
     
 
-class RootHandler(BaseHandler):
 
-    bounds_params = ('minx', 'miny', 'maxx', 'maxy' )
+
+class RootHandler(BaseHandler):
 
     def index(self, req, start_response):
         environ = req.environ.copy()
         environ['PATH_INFO'] = '/index.html'
         return get_static(req)(environ, start_response)
 
-    def GET_bounds(self, req):
-        # improve error output
-        try:
-            bounds = [float(req.GET.get(param)) for param in self.bounds_params]
-        except IndexError, e:
-            raise
-        except ValueError, e:
-            raise
-        return bounds
-
     def query(self, req, start_response):
         res = Response(content_type='application/json')
         index = self.rtree(req)
 
-        hits = index.intersection(tuple(self.GET_bounds(req)))
+        hits = index.intersection(tuple(GET_bounds(req)))
         res.body = simplejson.dumps(hits)
         return res
 
@@ -143,17 +133,32 @@ class ItemHandler(BaseHandler):
         pass
 
     
-def service_doc(environ, start_response):
-    environ = environ.copy()
-    environ['PATH_INFO'] = '/index.html'
-    static = environ['paste.config']['psid.static_app']
-    return static(environ, start_response)
+def service_doc(request, start_response):
+    static = get_static(request)
+    request.environ['PATH_INFO'] = '/service-doc.html'
+    return static(request.environ, start_response)
 
-def admin(environ, start_response):
-    pass
+def admin(req, start_response):
+    return Response()
 
-def nearest(environ, start_response):
-    pass
+def GET_bounds(req, bounds_params=('minx', 'miny', 'maxx', 'maxy' )):
+    # improve error output
+    try:
+        bounds = [float(req.GET.get(param)) for param in bounds_params]
+    except IndexError, e:
+        raise
+    except ValueError, e:
+        raise
+    return bounds
+
+def nearest(req, start_response):
+    bounds = GET_bounds(req)
+    howmany = req.GET.get('n', 1)
+    rtree = req.environ['psid.rtree']
+    res = Response(content_type='application/json')
+    hits = rtree.nearest(tuple(bounds), int(howmany))
+    res.body = simplejson.dumps(hits)
+    return res
 
 def make_whitstyle_api(conf):
     app = wsgi.PSIDSelector(wrap=wsgi.WebObWrapper)
@@ -175,7 +180,7 @@ def make_whitstyle_api(conf):
     app.add("/static/{filename:segment}", GET=get_static_res)
     app.add("/service-doc", GET=service_doc)
     app.add("/admin", GET=admin)
-    app.add("/nearest", ItemHandler())
+    app.add("/nearest", GET=nearest)
     app.add("/{uid}", ItemHandler())
 
     return app

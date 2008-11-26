@@ -69,6 +69,7 @@ class RtreeDataManager(object):
     def sortKey(self):
         return id(self)
 
+
 class RtreeWrapper(object):
     """
     wrapper for Rtree spatial index

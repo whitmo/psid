@@ -144,9 +144,15 @@ class ItemHandler(BaseHandler):
 
     
 def service_doc(environ, start_response):
-    pass
+    environ = environ.copy()
+    environ['PATH_INFO'] = '/index.html'
+    static = environ['paste.config']['psid.static_app']
+    return static(environ, start_response)
 
 def admin(environ, start_response):
+    pass
+
+def nearest(environ, start_response):
     pass
 
 def make_whitstyle_api(conf):
@@ -169,7 +175,9 @@ def make_whitstyle_api(conf):
     app.add("/static/{filename:segment}", GET=get_static_res)
     app.add("/service-doc", GET=service_doc)
     app.add("/admin", GET=admin)
+    app.add("/nearest", ItemHandler())
     app.add("/{uid}", ItemHandler())
+
     return app
 
 def make_app(global_conf, **kw):

@@ -2,10 +2,8 @@
 #from webob import exc, Request, Response
 from paste.deploy.config import ConfigMiddleware
 from psid import wsgi
-from psid.wrtree import make_rtree_middleware
 from selector import ByMethod
 from webob import Response
-import transaction
 import simplejson
 import static
 
@@ -14,6 +12,9 @@ class BaseHandler(ByMethod):
 
     def rtree(self, req):
         return req.environ['psid.rtree']
+
+    def rtree_raw(self, req):
+        return req.environ['psid.rtree_raw']
     
 
 class RootHandler(BaseHandler):
@@ -73,7 +74,8 @@ class RootHandler(BaseHandler):
         
     def add(self, json, req):
         if isinstance(json, dict):
-            self.rtree(req).add(json['id'], tuple(json['bbox']))
+            id_ = json['id']
+            self.rtree(req)[id_]=tuple(json['bbox'])
             return ["/%s" %json['id']]
         else:
             assert isinstance(json, list), "POST must be an Array or an Object"
@@ -98,10 +100,28 @@ def get_static_res(req, start_response):
 
 
 class ItemHandler(BaseHandler):
+
+    def get_uid(self, request):
+        """
+        """
+        uid = request.environ['selector.vars']['uid']
+        try:
+            # attempt to coerce uid to int
+            uid = int(uid)
+        except ValueError:
+            pass
+        return uid
+    
     def GET(self, request, start_response):
-##         res = Response(content_type='application/json')
-##         index = self.rtree(request)
-        raise NotImplementedError
+        res = Response(content_type='application/json')
+        index = self.rtree(request)
+        uid = self.get_uid(request)
+        bounds = index.get(uid)
+        if bounds is None:
+            res.status_int = 404
+            return res
+        res.body = simplejson.dumps(dict(id=uid, bbox=bounds))
+        return res
 
     def POST(self, request, start_response):
         raise NotImplementedError
@@ -110,7 +130,14 @@ class ItemHandler(BaseHandler):
         raise NotImplementedError
 
     def DELETE(self, request, start_response):
-        pass
+        uid = request.environ['selector.vars']['uid']
+        res = Response(content_type='application/json')
+        uid = self.get_uid(request)
+        if self.rtree(request).get(uid):
+            del self.rtree(request)[uid]
+        else:
+            res.status_int = 404
+        return res
 
     def PUT(self, request, start_response):
         pass

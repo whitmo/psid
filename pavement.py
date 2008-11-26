@@ -31,22 +31,27 @@ main = psid.app:make_app
 [paste.filter_app_factory]
 rtree = psid.wrtree:make_rtree_middleware
 tm_rtree = psid.wrtree:make_tmrtree_middleware
+rtree_index = psid.wrtree:make_rtree_index_component
+[psid.reverse_index]
+default=psid.wrtree:zodb_rindex_handler
+zodb=psid.wrtree:zodb_rindex_handler
+[zodb_init]
+default=psid.wrtree:zodb_init
 """
 
 install_requires=[
     'PasteDeploy',
     'PasteScript',
-    'simplejson',
     'WebOb',
-    'WebTest',
-    'decorator',
-    'selector',
-    'static',
-    'repoze.tm2',
     'ZODB3',
-    'repoze.debug'
+    'decorator',
+    'repoze.debug',
+    'repoze.tm2',
+    'selector',
+    'simplejson',
+    'static',
+    'ZODBMiddleware>=0.1dev'
     ]
-
 
 setup_deps = [
     "zc.buildout",
@@ -81,9 +86,15 @@ psid_bunch = Bunch(name='psid',
                    author_email="psid@list.opengeo.org",
                    url="http://psid.opengeo.org",
                    license="BSD",
+                   test_requires=["WebTest>=1.1.1dev",
+                                  "nose"
+                                  ],
                    test_suite='nose.collector',
                    packages=find_packages(),
-                   dependency_links=['http://dist.repoze.org/lemonade/dev/simple'],
+                   dependency_links=['http://dist.repoze.org/lemonade/dev/simple',
+                                     'https://svn.openplans.org/svn/ZODBMiddleware/trunk#egg=ZODBMiddleware-0.1dev',
+                                     'http://svn.pythonpaste.org/Paste/WebTest/trunk#egg=WebTest'
+                                     ],
                    include_package_data=True,
                    zip_safe=False,
                    install_requires = install_requires,

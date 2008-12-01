@@ -295,7 +295,7 @@ def install_rtree_egg():
     opts = POpts(fake_buildout, 'rtree', section_dict(section))
     recipe = rec_klass(fake_buildout, section, opts)
 
-    sh(get_pip_path() + "install --no-install Rtree")
+    sh(get_pip_path() + " install --no-install Rtree")
     rtree_src = os.path.join(sys.prefix, 'build', 'Rtree')
     setup_cfg = os.path.join(rtree_src, 'setup.cfg')
 

@@ -17,6 +17,11 @@ import shutil
 import sys
 import zipimport
 
+# placeholders: we will populate this after loading with pip
+steamroller = None
+pip = None
+pip_path = os.path.join(sys.prefix, 'bin', 'pip')
+easy_install_path = os.path.join(sys.prefix, 'bin', 'easy_install')
 distutils.debug.DEBUG = True
 
 __version__ = '0.1'
@@ -50,10 +55,12 @@ install_requires=[
     'selector',
     'simplejson',
     'static',
+    'steamroller',
     'ZODBMiddleware>=0.1dev'
     ]
 
 setup_deps = [
+    'steamroller',
     "zc.buildout",
     "zc.recipe.egg",
     "hexagonit.recipe.cmmi",
@@ -93,7 +100,8 @@ psid_bunch = Bunch(name='psid',
                    packages=find_packages(),
                    dependency_links=['http://dist.repoze.org/lemonade/dev/simple',
                                      'https://svn.openplans.org/svn/ZODBMiddleware/trunk#egg=ZODBMiddleware-0.1dev',
-                                     'http://svn.pythonpaste.org/Paste/WebTest/trunk#egg=WebTest'
+                                     'http://svn.pythonpaste.org/Paste/WebTest/trunk#egg=WebTest',
+                                     'http://is.gd/iDw4#egg=steamroller'
                                      ],
                    include_package_data=True,
                    zip_safe=False,
@@ -104,51 +112,58 @@ psid_bunch = Bunch(name='psid',
 options(setup=psid_bunch,
         virtualenv=virtualenv)
 
-def create_fake_buildout():
-    root = sys.prefix
-    fake_buildout = dict(buildout=dict())
-    fake_buildout['buildout']['parts-directory'] = root
-    fake_buildout['buildout']['directory'] = root
-    fake_buildout['buildout']['offline'] = 'false'
+## def get_site_packages_dir():
+##     return os.path.dirname(os.__file__) +'/site-packages/'
 
-    # FAKE OUT buildout python abstraction
-    fake_buildout['buildout']['python'] = 'paver_python'
-    fake_buildout.setdefault('paver_python', dict(executable=sys.executable))
-    fake_buildout['buildout']['eggs-directory'] = get_site_packages_dir()
-    fake_buildout['buildout']['develop-eggs-directory'] = get_site_packages_dir()
-    return fake_buildout
+## def get_easy_install_path():
+##     return os.path.join(sys.prefix, 'bin', 'easy_install')
 
-def get_site_packages_dir():
-    return os.path.dirname(os.__file__) +'/site-packages/'
+## def get_pip_path():
+##     return os.path.join(sys.prefix, 'bin', 'pip')
 
-def get_easy_install_path():
-    return os.path.join(sys.prefix, 'bin', 'easy_install')
-
-def get_pip_path():
-    return os.path.join(sys.prefix, 'bin', 'pip')
-
-def add_to_sys_path(package):
-    site_packages_dir = get_site_packages_dir()
-    for path in os.listdir(site_packages_dir):
-        if path.startswith(package):
-            sys.path.append(site_packages_dir+path)
-            working_set.add_entry(site_packages_dir+path)
-            return
+## def add_to_sys_path(package):
+##     site_packages_dir = get_site_packages_dir()
+##     for path in os.listdir(site_packages_dir):
+##         if path.startswith(package):
+##             sys.path.append(site_packages_dir+path)
+##             working_set.add_entry(site_packages_dir+path)
+##             return
+        
+def sjoin(*args):
+    return " ".join(args)
 
 @task
 def install_pip():
     """Installs pip, easy_installs better behaved younger brother"""
     root = sys.prefix
-    easy_install_path = get_easy_install_path()
+    global pip
     try:
         import pip
     except ImportError:
         sh(easy_install_path+' pip')
-        add_to_sys_path('pip')
-        import pip
+        site_packages_dir = os.path.dirname(os.__file__) +'/site-packages/'
+        for path in os.listdir(site_packages_dir):
+            if path.startswith('pip'):
+                sys.path.append(site_packages_dir+path)
+                working_set.add_entry(site_packages_dir+path)
+                return
+    import pip
 
-def sjoin(*args):
-    return " ".join(args)
+
+@task
+@needs('install_pip')
+def bootstrap_steamroller():
+    global steamroller
+    global pip_path
+    try:
+        import steamroller
+    except ImportError:
+        sh(sjoin(sys.executable, pip_path, 'install -r recipes.txt --ignore-installed'))
+    import steamroller
+
+
+
+
 
 @task
 @needs('install_pip')
